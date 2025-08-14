@@ -1,0 +1,5 @@
+rootProject.name = "OwnAndroid"
+
+include ':app'
+
+include ':sdkLibrary'

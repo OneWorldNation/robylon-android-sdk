@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "631100578221",
+    "project_id": "ownapp-bc71b",
+    "storage_bucket": "ownapp-bc71b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:631100578221:android:f36000753c8df5dcc16924",
+        "android_client_info": {
+          "package_name": "com.own.android"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC8aCM9F0jrYJSq8zWLmBFw57gJMHHNQ6E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
