@@ -8,7 +8,7 @@ The Robylon Android SDK allows you to integrate the Robylon chatbot into your An
 ## 2. Integration Steps
 
 ### 2.1 Add `robylon-release.aar`
-1. Place `robylon-release.aar` in `app/libs/`
+1. Place `robylon-release.aar` in `app/libs/` you will find aar in /releases/*
 2. Add in `app/build.gradle`:
 ```gradle
 dependencies {
