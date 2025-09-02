@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
 import app.own.Robylon
@@ -29,6 +30,8 @@ class SettingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivitySettingsBinding.inflate(layoutInflater, null, false)
         setContentView(binding.root)
+        enableEdgeToEdge()
+        setupEdgeToEdgeInsets(binding.scrollView)
 
         binding.orgIdEt.setText(getValue(ORG_ID, BuildConfig.OWN_API_KEY))
         binding.userIdEt.setText(getValue(USER_ID))

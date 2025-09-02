@@ -33,9 +33,9 @@ object Deps {
 
     object Android {
         const val minSdk = 19
-        const val targetSdk = 33
-        const val compileSdk = 33
-        const val buildToolsVersion = "33.0.0"
+        const val targetSdk = 35
+        const val compileSdk = 35
+        const val buildToolsVersion = "35.0.0"
     }
 
     object Publication {

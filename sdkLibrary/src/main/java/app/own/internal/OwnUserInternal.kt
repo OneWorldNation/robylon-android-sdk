@@ -103,6 +103,10 @@ object OwnUserInternal {
 
     }
 
+    fun hasBotConfig(): Boolean {
+        return pref.contains(PREF_KEY_BOT_CONFIG)
+    }
+
     fun removeBotConfigListener(botConfigListener: BotConfigListener) {
         botConfigListeners.remove(botConfigListener)
     }
