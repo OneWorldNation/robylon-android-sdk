@@ -1,30 +1,32 @@
 package app.own.activity
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.content.res.ColorStateList
-import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
+import androidx.activity.ComponentActivity
+import androidx.activity.enableEdgeToEdge
+import androidx.core.view.WindowInsetsCompat
+import app.own.Robylon
+import app.own.config.BotConfigListener
 import app.own.event.ChatbotEventType
 import app.own.internal.OwnInternal
 import app.own.internal.OwnUserInternal
 import app.own.utils.merge
 import app.own.utils.postJsMessage
 import app.own.utils.setBrandColor
+import app.own.view.ChatBotButtonType
 import app.own.view.webview.AdvancedWebView
 import app.own.view.webview.WebViewManager
 import com.own.BuildConfig
 import com.own.databinding.ActivityWebviewBinding
 import org.json.JSONObject
 
-class WebViewActivity : Activity() {
+class WebViewActivity : ComponentActivity() {
 
     private lateinit var binding: ActivityWebviewBinding
 
@@ -42,6 +44,10 @@ class WebViewActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Enable edge-to-edge display
+        enableEdgeToEdge()
+        
         binding = ActivityWebviewBinding.inflate(layoutInflater, null, false)
         setContentView(binding.root)
 
@@ -66,10 +72,44 @@ class WebViewActivity : Activity() {
                     )
                 )
         }
+        
+        // Handle system insets for edge-to-edge
+        setupEdgeToEdgeInsets(binding.parentFL)
+        
         loadIfRequired()
         WebViewManager.payloadListener { event ->
             if (event == ChatbotEventType.CHATBOT_CLOSED) {
                 finish()
+            }
+        }
+
+        if (!OwnUserInternal.hasBotConfig()) {
+            OwnUserInternal
+                .addBotConfigListener(
+                    object : BotConfigListener {
+                        override fun listen(chatBotButtonType: ChatBotButtonType) {
+                            loadIfRequired()
+                            OwnUserInternal.removeBotConfigListener(this)
+                        }
+                    }
+                )
+        }
+    }
+
+    private fun setupEdgeToEdgeInsets(onView: View) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+            onView.setOnApplyWindowInsetsListener { view, insets ->
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                    view.setPadding(
+                        systemBars.left,
+                        systemBars.top,
+                        systemBars.right,
+                        systemBars.bottom
+                    )
+                }
+
+                insets
             }
         }
     }

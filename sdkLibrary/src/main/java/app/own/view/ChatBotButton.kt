@@ -150,12 +150,16 @@ class ChatBotButton : FrameLayout {
             .executorService.execute {
                 val bitmap = BitmapHelper.getBitmapFromUrl(type.url)
                 if (bitmap == null) {
-                    progressBar.visibility = View.GONE
+                    progressBar.post {
+                        progressBar.visibility = View.GONE
+                    }
                     return@execute
                 }
                 imageView.post {
                     imageView.setImageBitmap(BitmapHelper.getCircularBitmap(bitmap))
-                    progressBar.visibility = View.GONE
+                    progressBar.post {
+                        progressBar.visibility = View.GONE
+                    }
                 }
             }
     }
