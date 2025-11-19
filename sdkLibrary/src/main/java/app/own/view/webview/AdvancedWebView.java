@@ -144,6 +144,10 @@ public class AdvancedWebView extends WebView {
         mRequestCodeFilePicker = requestCodeFilePicker;
     }
 
+    public void clearActivityReference() {
+        mActivity = null;
+    }
+
     @Override
     public void setWebViewClient(final WebViewClient client) {
         mCustomWebViewClient = client;
