@@ -10,8 +10,8 @@ import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.WindowInsetsCompat
-import app.own.Robylon
 import app.own.config.BotConfigListener
 import app.own.event.ChatbotEventType
 import app.own.internal.OwnInternal
@@ -29,6 +29,16 @@ import org.json.JSONObject
 class WebViewActivity : ComponentActivity() {
 
     private lateinit var binding: ActivityWebviewBinding
+
+    private val filePickerLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        try{
+            WebViewManager.webView?.handleFilePickerResult(result.resultCode, result.data)
+        }catch (e:Exception){
+            //Do nothing
+        }
+    }
 
     private val webViewClient = object : WebViewClient() {
         override fun onPageFinished(view: WebView?, url: String?) {
@@ -57,15 +67,19 @@ class WebViewActivity : ComponentActivity() {
 
         binding.progressBar.setBrandColor()
 
-        val webView: WebView = WebViewManager.createOrGetWebView(this)
+        val advancedWebView: AdvancedWebView = WebViewManager.createOrGetWebView(this)
+
+        advancedWebView.setFilePickerLauncher { intent ->
+            filePickerLauncher.launch(intent)
+        }
 
         if (binding.webViewFL.childCount == 0) {
-            webView.webViewClient = webViewClient
+            advancedWebView.webViewClient = webViewClient
             WebViewManager.detachFromParent()
             binding
                 .webViewFL
                 .addView(
-                    webView,
+                    advancedWebView,
                     FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.MATCH_PARENT
@@ -158,11 +172,6 @@ class WebViewActivity : ComponentActivity() {
         )
     }
 
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        WebViewManager.webView?.onActivityResult(requestCode, resultCode, data)
-    }
 
     override fun onDestroy() {
         super.onDestroy()

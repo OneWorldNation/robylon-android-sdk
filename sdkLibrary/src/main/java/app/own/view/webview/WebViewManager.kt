@@ -75,7 +75,7 @@ internal object WebViewManager {
         isError = false
         javaScriptInterfaceLinksHandler = null
         webView?.clearActivityReference()
-        webView?.destroy()
+        webView?.onDestroy()
         webView = null
     }
 
