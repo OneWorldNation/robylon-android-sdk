@@ -26,6 +26,7 @@ internal object WebViewManager {
             val safeJavaScriptInterfaceLinksHandler = JavaScriptInterfaceLinksHandler()
             safeWebView.addJavascriptInterface(safeJavaScriptInterfaceLinksHandler, "Android")
             safeWebView.setDefaultSettings()
+            safeWebView.setListener(activity, null)
             javaScriptInterfaceLinksHandler = safeJavaScriptInterfaceLinksHandler
             safeJavaScriptInterfaceLinksHandler.listener = object : JavaScriptPayloadListener {
                 override fun onPayload(payload: String) {
@@ -40,6 +41,7 @@ internal object WebViewManager {
             webView = safeWebView
             safeWebView
         } else {
+            webView?.setListener(activity, null)
             webView!!
         }
     }
@@ -72,6 +74,7 @@ internal object WebViewManager {
         onPageFinished = false
         isError = false
         javaScriptInterfaceLinksHandler = null
+        webView?.clearActivityReference()
         webView?.destroy()
         webView = null
     }
