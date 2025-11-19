@@ -9,9 +9,13 @@ class MyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         AppCreator.context = this
-        Robylon.initialize(
-            context = this,
-            apiKey = BuildConfig.OWN_API_KEY,
-        )
+        try {
+            Robylon.initialize(
+                context = this,
+                apiKey = BuildConfig.OWN_API_KEY,
+            )
+        } catch (e: Exception) {
+            //Do nothing
+        }
     }
 }
