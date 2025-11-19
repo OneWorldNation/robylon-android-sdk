@@ -70,6 +70,10 @@ public class AdvancedWebView extends WebView {
         void onExternalPageRequest(String url);
     }
 
+    public interface FilePickerLauncher {
+        void launch(Intent intent);
+    }
+
     public static final String PACKAGE_NAME_DOWNLOAD_MANAGER = "com.android.providers.downloads";
     protected static final int REQUEST_CODE_FILE_PICKER = 51426;
     protected static final String DATABASES_SUB_FOLDER = "/databases";
@@ -93,6 +97,7 @@ public class AdvancedWebView extends WebView {
     protected boolean mGeolocationEnabled;
     protected String mUploadableFileTypes = "*/*";
     protected final Map<String, String> mHttpHeaders = new HashMap<String, String>();
+    protected FilePickerLauncher mFilePickerLauncher;
 
     public AdvancedWebView(Context context) {
         super(context);
@@ -146,6 +151,10 @@ public class AdvancedWebView extends WebView {
 
     public void clearActivityReference() {
         mActivity = null;
+    }
+
+    public void setFilePickerLauncher(FilePickerLauncher launcher) {
+        mFilePickerLauncher = launcher;
     }
 
     @Override
@@ -267,52 +276,57 @@ public class AdvancedWebView extends WebView {
         destroy();
     }
 
-    public void onActivityResult(final int requestCode, final int resultCode, final Intent intent) {
-        if (requestCode == mRequestCodeFilePicker) {
-            if (resultCode == Activity.RESULT_OK) {
-                if (intent != null) {
-                    if (mFileUploadCallbackFirst != null) {
-                        mFileUploadCallbackFirst.onReceiveValue(intent.getData());
-                        mFileUploadCallbackFirst = null;
-                    }
-                    else if (mFileUploadCallbackSecond != null) {
-                        Uri[] dataUris = null;
+    public void handleFilePickerResult(final int resultCode, final Intent intent) {
+        if (resultCode == Activity.RESULT_OK) {
+            if (intent != null) {
+                if (mFileUploadCallbackFirst != null) {
+                    mFileUploadCallbackFirst.onReceiveValue(intent.getData());
+                    mFileUploadCallbackFirst = null;
+                }
+                else if (mFileUploadCallbackSecond != null) {
+                    Uri[] dataUris = null;
 
-                        try {
-                            if (intent.getDataString() != null) {
-                                dataUris = new Uri[] { Uri.parse(intent.getDataString()) };
-                            }
-                            else {
-                                if (Build.VERSION.SDK_INT >= 16) {
-                                    if (intent.getClipData() != null) {
-                                        final int numSelectedFiles = intent.getClipData().getItemCount();
+                    try {
+                        if (intent.getDataString() != null) {
+                            dataUris = new Uri[] { Uri.parse(intent.getDataString()) };
+                        }
+                        else {
+                            if (Build.VERSION.SDK_INT >= 16) {
+                                if (intent.getClipData() != null) {
+                                    final int numSelectedFiles = intent.getClipData().getItemCount();
 
-                                        dataUris = new Uri[numSelectedFiles];
+                                    dataUris = new Uri[numSelectedFiles];
 
-                                        for (int i = 0; i < numSelectedFiles; i++) {
-                                            dataUris[i] = intent.getClipData().getItemAt(i).getUri();
-                                        }
+                                    for (int i = 0; i < numSelectedFiles; i++) {
+                                        dataUris[i] = intent.getClipData().getItemAt(i).getUri();
                                     }
                                 }
                             }
                         }
-                        catch (Exception ignored) { }
-
-                        mFileUploadCallbackSecond.onReceiveValue(dataUris);
-                        mFileUploadCallbackSecond = null;
                     }
-                }
-            }
-            else {
-                if (mFileUploadCallbackFirst != null) {
-                    mFileUploadCallbackFirst.onReceiveValue(null);
-                    mFileUploadCallbackFirst = null;
-                }
-                else if (mFileUploadCallbackSecond != null) {
-                    mFileUploadCallbackSecond.onReceiveValue(null);
+                    catch (Exception ignored) { }
+
+                    mFileUploadCallbackSecond.onReceiveValue(dataUris);
                     mFileUploadCallbackSecond = null;
                 }
             }
+        }
+        else {
+            if (mFileUploadCallbackFirst != null) {
+                mFileUploadCallbackFirst.onReceiveValue(null);
+                mFileUploadCallbackFirst = null;
+            }
+            else if (mFileUploadCallbackSecond != null) {
+                mFileUploadCallbackSecond.onReceiveValue(null);
+                mFileUploadCallbackSecond = null;
+            }
+        }
+    }
+
+    @Deprecated
+    public void onActivityResult(final int requestCode, final int resultCode, final Intent intent) {
+        if (requestCode == mRequestCodeFilePicker) {
+            handleFilePickerResult(resultCode, intent);
         }
     }
 
@@ -1248,11 +1262,16 @@ public class AdvancedWebView extends WebView {
 
         i.setType(mUploadableFileTypes);
 
-        if (mFragment != null && mFragment.get() != null && Build.VERSION.SDK_INT >= 11) {
-            mFragment.get().startActivityForResult(Intent.createChooser(i, getFileUploadPromptLabel()), mRequestCodeFilePicker);
+        Intent chooserIntent = Intent.createChooser(i, getFileUploadPromptLabel());
+
+        if (mFilePickerLauncher != null) {
+            mFilePickerLauncher.launch(chooserIntent);
+        }
+        else if (mFragment != null && mFragment.get() != null && Build.VERSION.SDK_INT >= 11) {
+            mFragment.get().startActivityForResult(chooserIntent, mRequestCodeFilePicker);
         }
         else if (mActivity != null && mActivity.get() != null) {
-            mActivity.get().startActivityForResult(Intent.createChooser(i, getFileUploadPromptLabel()), mRequestCodeFilePicker);
+            mActivity.get().startActivityForResult(chooserIntent, mRequestCodeFilePicker);
         }
     }
 
