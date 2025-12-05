@@ -2,9 +2,12 @@ package app.own.activity
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.View
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
@@ -25,6 +28,7 @@ import app.own.view.webview.WebViewManager
 import com.own.BuildConfig
 import com.own.databinding.ActivityWebviewBinding
 import org.json.JSONObject
+import androidx.core.net.toUri
 
 class WebViewActivity : ComponentActivity() {
 
@@ -50,6 +54,36 @@ class WebViewActivity : ComponentActivity() {
             postSecondMessage(safeWebView)
             binding.progressBar.visibility = View.GONE
         }
+
+        override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+            return handleUrlLoading(url)
+        }
+
+        @Suppress("DEPRECATION")
+        override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                request?.url?.toString()?.let { handleUrlLoading(it) } ?: false
+            } else {
+                super.shouldOverrideUrlLoading(view, request)
+            }
+        }
+    }
+
+    private fun handleUrlLoading(url: String?): Boolean {
+        try {
+            if (url == null) return false
+
+            val chatIframeUrl = OwnInternal.chatIframeUrl
+            if (chatIframeUrl != null && url.startsWith(chatIframeUrl)) {
+                return false
+            }
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+        } catch (e: Exception) {
+            return false
+        }
+        return true
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -91,9 +125,19 @@ class WebViewActivity : ComponentActivity() {
         setupEdgeToEdgeInsets(binding.parentFL)
         
         loadIfRequired()
-        WebViewManager.payloadListener { event ->
+        WebViewManager.payloadListener { event, jsonObject ->
             if (event == ChatbotEventType.CHATBOT_CLOSED) {
                 finish()
+            } else if (event == ChatbotEventType.DOWNLOAD_FILE) {
+                val url = jsonObject?.getString("url")
+                try {
+                    val launchUri = url?.toUri() ?: return@payloadListener
+                    val intent = Intent(Intent.ACTION_VIEW, launchUri)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    startActivity(intent)
+                } catch (e: Exception) {
+                    // Do nothing
+                }
             }
         }
 
