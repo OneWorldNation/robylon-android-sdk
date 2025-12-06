@@ -7,7 +7,7 @@ object Deps {
     const val SDK_PACKAGE_NAME = "com.own"
     private const val MAJOR_VERSION = 1
     private const val MINOR_VERSION = 0
-    private const val PATCH_VERSION = 1
+    private const val PATCH_VERSION = 2
     const val SNAPSHOT = -1
     val BUILD_TYPE = BuildType.NATIVE
     private const val ISPROD = false
@@ -29,7 +29,7 @@ object Deps {
 
     const val OWN_CONFIG_BASE_URL_PROD = "https://api.robylon.ai"
     const val OWN_CONFIG_BASE_URL_STAGE = "https://stage-api.robylon.ai"
-    const val OWN_API_KEY = "30e4fab6-cadb-4b99-b1e7-30fca6e147ac"
+    const val OWN_API_KEY = ""
 
     object Android {
         const val minSdk = 19

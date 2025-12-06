@@ -12,7 +12,7 @@ import org.json.JSONObject
 
 internal object WebViewManager {
 
-    private lateinit var payloadListener: (event: ChatbotEventType) -> Unit
+    private lateinit var payloadListener: (event: ChatbotEventType, jsonObject: JSONObject?) -> Unit
     private var javaScriptInterfaceLinksHandler: JavaScriptInterfaceLinksHandler? = null
     var webView: AdvancedWebView? = null
     var currentUrl :String = ""
@@ -51,13 +51,15 @@ internal object WebViewManager {
             val jsonObject = JSONObject(payload)
             val operation = jsonObject.getString("operation")
             if (operation == "chat.close") {
-                payloadListener.invoke(ChatbotEventType.CHATBOT_CLOSED)
+                payloadListener.invoke(ChatbotEventType.CHATBOT_CLOSED, null)
                 OwnInternal.chatBotEvent(ChatbotEventType.CHATBOT_CLOSED)
             } else if (operation == "system.event") {
                 val state = jsonObject.getString("event")
                 state.mapToEnum<ChatbotEventType>(ignoreCase = true)?.let {
                     OwnInternal.chatBotEvent(it)
                 }
+            } else if (operation == "download_file") {
+                payloadListener.invoke(ChatbotEventType.DOWNLOAD_FILE, jsonObject)
             }
         }
     }
@@ -66,7 +68,7 @@ internal object WebViewManager {
         webView?.detachFromParent()
     }
 
-    fun payloadListener(listener: (event: ChatbotEventType) -> Unit) {
+    fun payloadListener(listener: (event: ChatbotEventType, jsonObject: JSONObject?) -> Unit) {
         payloadListener = listener
     }
 
